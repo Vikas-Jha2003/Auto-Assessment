@@ -1,0 +1,11 @@
+{
+  "name": "auto-assessment",
+  "private": true,
+  "description": "Grade answer sheets against a rubric with detailed feedback — a single-page web app for Firebase Hosting",
+  "scripts": {
+    "serve": "python3 -m http.server 8000 --directory web",
+    "test": "node --test tests/web_engine.test.mjs",
+    "demo-files": "python3 scripts/make_demo_files.py",
+    "deploy": "firebase deploy --only hosting"
+  }
+}

@@ -1,0 +1,20 @@
+Name: Rahul Mehta     Roll No: 21CS057
+
+Q1) Overfitting is when the model is too complex and gets high accuracy on training data but low accuracy on testing data.
+To reduce it we can use regularization. Another method is to use more data.
+
+Q2) Self attention lets each word look at the other words in the sentence. We create query key and value. The query is multiplied with the keys to get scores and these scores tell how important each word is. Then softmax is applied to make them probabilities. The values are then multiplied by these probabilities and added up to get the output.
+We divide by root of dk to make the computation faster.
+
+Q3) Precision = TP / (TP + FN) = 40/60 = 0.67
+Recall = TP / (TP + FP) = 40/50 = 0.8
+F1 = 2 x 0.67 x 0.8 / (0.67 + 0.8) = 0.729
+Accuracy = 40+30 / 100 = 0.7
+
+Q4) GANs have a generator and a discriminator which compete with each other. Diffusion models add noise to images and then learn to remove it.
+GANs are harder to train than diffusion models. GANs have mode collapse problem.
+Diffusion models are better quality but slower.
+
+Q5) In RAG we retrieve relevant documents from a database and give them to the LLM so it can answer questions with up to date information. The documents are stored as embeddings.
+One problem is hallucination. We can solve it by using a bigger model.
+Another problem is the retrieval can be slow when there are many documents.

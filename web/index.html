@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Auto-Assessment</title>
+  <meta name="description" content="Grade answer sheets against a rubric, with marks per question and feedback students can act on.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e2a78'/%3E%3Crect x='9' y='6.5' width='14' height='19' rx='2' fill='%23fff'/%3E%3Cpath d='M12 12h8M12 16h6M12 20h4' stroke='%231e2a78' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/app.css?v=4">
+  <script src="vendor/mammoth.browser.min.js" defer></script>
+  <script src="vendor/jszip.min.js" defer></script>
+  <script type="module" src="js/app.js?v=4"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <span class="brand">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="8" class="logo-bg"/>
+          <rect x="9" y="6.5" width="14" height="19" rx="2" class="logo-sheet"/>
+          <path d="M12 12h8M12 16h6M12 20h4" class="logo-lines"/>
+        </svg>
+        <span class="brand-name">Auto-Assessment</span>
+        <span class="brand-tag">Rubric-based grading</span>
+      </span>
+      <button class="btn" id="openSettings" type="button">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        Settings<span class="dot" id="settingsDot" hidden></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <h1>Grade answer sheets</h1>
+      <p>Upload a test and your students' answer sheets. Every student gets marks for each question, with evidence quoted from their own answer and clear steps to improve.</p>
+    </section>
+
+    <div id="notice"></div>
+
+    <form id="form" novalidate>
+      <section class="step">
+        <div class="step-head"><span class="n">1</span><div><h2>The test</h2><p>The question paper and how it is marked.</p></div></div>
+        <div class="slots">
+          <div class="slot" data-slot="qp">
+            <div class="slot-head"><h3>Question paper</h3><span class="req">Required</span></div>
+          </div>
+          <div class="slot" data-slot="rubric">
+            <div class="slot-head"><h3>Rubric</h3><span class="req">Required</span></div>
+          </div>
+          <div class="slot" data-slot="model">
+            <div class="slot-head"><h3>Model answers</h3><span class="opt">Optional if in the rubric</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><span class="n">2</span><div><h2>Answer sheets</h2><p>One student per file, or several students in each file.</p></div></div>
+        <div class="seg" role="radiogroup" aria-label="How the answer sheets are organised">
+          <button type="button" role="radio" data-mode="individual" aria-checked="true">One file per student</button>
+          <button type="button" role="radio" data-mode="class" aria-checked="false">Several students per file</button>
+        </div>
+        <p class="hint" id="modeHint"></p>
+        <div class="slot wide" data-slot="sheets"></div>
+      </section>
+
+      <div class="go">
+        <button class="btn primary big" id="gradeBtn" type="submit">Grade answer sheets</button>
+        <p class="form-error" id="formError" role="alert"></p>
+      </div>
+    </form>
+
+    <section id="run" hidden></section>
+    <section id="report" hidden></section>
+  </main>
+
+
+  <dialog id="settings" aria-labelledby="settingsTitle">
+    <form method="dialog" id="settingsForm">
+      <h2 id="settingsTitle">Settings</h2>
+      <label class="field">OpenRouter API key
+        <span class="row nowrap">
+          <input type="password" id="apiKey" autocomplete="off" spellcheck="false" placeholder="sk-or-v1-…">
+          <button type="button" class="btn" id="showKey">Show</button>
+        </span>
+      </label>
+      <p class="small muted">Saved only in this browser and sent only to OpenRouter.</p>
+      <div class="row"><button type="button" class="btn" id="checkKey">Check key and credit</button><span class="small" id="keyMsg" role="status"></span></div>
+
+      <details class="advanced">
+        <summary>Advanced</summary>
+        <label class="field">Grading model<input type="text" id="graderModel" spellcheck="false"></label>
+        <label class="field">Reading model <span class="muted">for understanding documents and reading handwriting; must accept images</span><input type="text" id="readingModel" spellcheck="false"></label>
+        <div class="two-fields">
+          <label class="field">Grading passes per question<input type="number" id="samples" min="1" max="5"></label>
+          <label class="field">Spending limit per run (USD)<input type="number" id="budget" min="0.1" step="0.1"></label>
+        </div>
+        <label class="check"><input type="checkbox" id="mock"><span>Demo mode without an API key. Marks are fake and photos can't be read.</span></label>
+      </details>
+
+      <div class="row end">
+        <button value="cancel" class="btn ghost" formnovalidate>Cancel</button>
+        <button value="save" class="btn primary" id="saveSettings">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="preview" class="wide-dialog" aria-labelledby="previewTitle">
+    <form method="dialog">
+      <h2 id="previewTitle"></h2>
+      <p class="small muted" id="previewMeta"></p>
+      <pre id="previewText"></pre>
+      <div class="row end"><button class="btn primary" value="close">Close</button></div>
+    </form>
+  </dialog>
+
+  <div id="toasts" aria-live="polite"></div>
+  <noscript>This app needs JavaScript.</noscript>
+</body>
+</html>

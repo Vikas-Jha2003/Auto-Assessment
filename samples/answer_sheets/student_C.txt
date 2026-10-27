@@ -1,0 +1,18 @@
+Name: Priya Sharma   Roll: 21CS063
+
+Ans 3.
+precision = 40/(40+10) = 0.8
+recall = 40/(40+20) = 0.75
+F1 = 2*0.8*0.75/(0.8+0.75) = 1.2/1.55 = 0.77
+
+Ans 1.
+Overfitting is when the model does not learn enough from the data and the accuracy is low on both training and test data. We can fix it by training for more epochs.
+
+Ans 4.
+GAN uses generator and discriminator. Diffusion model uses a transformer to generate images from text prompt like DALL-E. Diffusion is better than GAN.
+
+Ans 2.
+attention = softmax(QK^T/sqrt(dk))V
+Q is query K is key V is value.
+
+(Q5 not attempted - ran out of time)

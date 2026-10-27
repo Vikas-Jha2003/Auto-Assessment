@@ -1,0 +1,23 @@
+Name: Ananya Rao      Roll No: 21CS042
+
+Q1. Overfitting means the model memorises the training data, including the noise in it, so training accuracy is very high but it does badly on new test data - it does not generalise.
+Two ways to reduce it:
+(i) Dropout - randomly switching off neurons during training so the network cannot rely on specific neurons and learns more robust features.
+(ii) Early stopping - we watch the validation loss and stop training when it starts going up, before the model starts memorising.
+
+Q2. In self attention every token embedding is multiplied by three learned matrices Wq, Wk, Wv to get query, key and value vectors. To find how much token i should attend to token j we take the dot product of q_i with k_j. Doing this for all tokens gives the matrix QK^T. Then we divide by sqrt(dk) and apply softmax row wise so each row of weights adds to 1. Finally the output for each token is the weighted sum of the value vectors, softmax(QK^T/sqrt(dk))V.
+We scale because when dk is large the dot products become large in magnitude, the softmax then becomes very sharp (almost one-hot) and its gradients become very small, which makes training slow and unstable. Dividing by sqrt(dk) keeps the variance of the scores around 1.
+
+Q3. Precision = TP/(TP+FP) = 40/50 = 0.8
+Recall = TP/(TP+FN) = 40/60 = 0.667
+F1 = 2PR/(P+R) = 2(0.8)(0.667)/(1.467) = 1.067/1.467 = 0.727
+Accuracy = (TP+TN)/N = (40+30)/100 = 0.70
+
+Q4. (a) GAN: two networks, generator and discriminator, play a minimax game. Discriminator classifies real vs fake, generator tries to fool it. Diffusion: noise is added step by step to the image (forward process) and a neural network (usually a U-Net) is trained to predict the noise so it can reverse the process.
+(b) GANs are unstable to train - the generator and discriminator have to stay balanced, and training can oscillate. Diffusion models use a simple MSE loss on the noise so training is stable.
+(c) GANs suffer from mode collapse where the generator only produces a few kinds of outputs. Diffusion models give more diverse samples.
+(d) GANs are fast since one forward pass produces an image. Diffusion is slow because it needs many denoising steps, although DDIM and distillation reduce the steps.
+
+Q5. RAG pipeline: first the documents are broken into chunks and each chunk is converted into an embedding using an embedding model and stored in a vector database. When a user asks a question, the question is embedded too and we do a similarity search (cosine) to get the top-k chunks. These chunks are added to the prompt with the question and the LLM writes an answer based on them.
+Failure 1: the retriever brings back chunks that are not relevant (e.g. the question uses different words than the document). Fix: use hybrid search (BM25 + embeddings) and a re-ranker model on the top results.
+Failure 2: the LLM still hallucinates and adds facts that are not in the retrieved text. Fix: tell the model to answer only from the context and say "I don't know" otherwise, and ask it to cite which chunk each claim comes from.
