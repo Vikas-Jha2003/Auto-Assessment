@@ -1,6 +1,0 @@
-{
-  "_note": "Reference marks for the sample sheets, assigned by hand using the rubric in exam.yaml. Replace/extend with marks from a real teacher for your project evaluation.",
-  "student_A": {"1": 4, "2": 6, "3": 5, "4": 7, "5": 8},
-  "student_B": {"1": 2.5, "2": 3.5, "3": 3, "4": 4, "5": 3},
-  "student_C": {"1": 0, "2": 2, "3": 3, "4": 0.5, "5": 0}
-}

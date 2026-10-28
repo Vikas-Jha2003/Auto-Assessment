@@ -2,18 +2,17 @@
 
     python scripts/make_demo_files.py
 
-Two tests (Generative AI, Biology), each with a question paper, rubric and model answers, plus
-answer sheets as typed PDFs, Word files, handwritten photos, scanned PDFs, whole-class bundles
-and a few tricky sheets.
+Three tests (Generative AI, Biology, and a science test in Hindi), each with a question paper,
+rubric and model answers, plus answer sheets as typed PDFs, Word files, handwritten photos,
+scanned PDFs, whole-class bundles, tricky sheets, wrong documents, and answers in Hindi, Tamil
+and Hinglish. The Indian-language files are made by indic_demo.py.
 """
 from __future__ import annotations
 
 import io
-import json
 import random
 import shutil
 import textwrap
-import zipfile
 from pathlib import Path
 
 import docx
@@ -21,13 +20,15 @@ import pymupdf
 import yaml
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
+import indic_demo
+
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "demo-files"
 FONT = ROOT / "scripts" / "assets" / "Caveat-500.ttf"
-rng = random.Random(7)
 
 # ============================================================== content
-GENAI_EXAM = yaml.safe_load((ROOT / "samples" / "exam.yaml").read_text())
+SOURCE = ROOT / "scripts" / "demo_source"
+GENAI_EXAM = yaml.safe_load((SOURCE / "genai_test.yaml").read_text())
 
 # Each sheet: header line + list of pages, each page a list of (label, answer) blocks.
 GENAI_SHEETS = {
@@ -72,13 +73,6 @@ GENAI_SHEETS = {
         ("Q5.", "Index the docs as embeddings; retrieve the similar chunks for a query; the LLM generates the answer from them.\nFailure: hallucination - prompt it to only use the context."),
     ]]),
 }
-
-ARJUN_JSON = {"student_id": "Arjun Nair (21CS073)", "answers": {
-    "1": "Overfitting is high bias. Use more layers to fix it.",
-    "2": "Self attention uses Q K V. Q times K transpose gives scores, then softmax, then multiply by V.",
-    "3": "Precision 0.8, Recall 0.667, F1 0.727, Accuracy 0.7",
-    "4": "GAN has generator and discriminator. Diffusion adds noise and removes it. GANs can have mode collapse.",
-    "5": ""}}
 
 EDGE = {
     "blank_sheet.txt": "Name: Sameer Khan    Roll No: 21CS095\n\n(no answers written)\n",
@@ -127,16 +121,15 @@ Q5. Large language models are very powerful but they can make mistakes.
 """,
 }
 
-PASTE_EXAMPLE = {"name": "Riya Paul (21CS100)", "text": """Q1. Overfitting means the model fits the training data, noise included, so it does well in training but poorly on test data. Dropout and early stopping reduce it.
-Q2. Tokens are projected to queries, keys and values with learned matrices. Scores = QK^T / sqrt(dk), softmax over each row, output = weights x V. The scaling keeps softmax from saturating.
-Q3. P = 0.8, R = 0.667, F1 = 0.727, Accuracy = 0.7 (P = 40/50, R = 40/60, F1 = 2PR/(P+R), Acc = 70/100)
-Q4. GAN = generator vs discriminator; diffusion = learn to reverse added Gaussian noise. GANs unstable + mode collapse, diffusion stable + diverse; GANs one step, diffusion many steps.
-Q5. Chunk + embed + store docs; embed query and retrieve top-k; give chunks to the LLM. Failure: irrelevant retrieval -> re-ranker. Failure: hallucination -> answer only from context with citations."""}
-
-GENAI_TEACHER = [  # student, Q1..Q5
-    ("Ananya Rao", 4, 6, 5, 7, 8), ("Rahul Mehta", 2.5, 3.5, 3, 4, 3), ("Priya Sharma", 0, 2, 3, 0.5, 0),
-    ("Karan Malhotra", 4, 5, 5, 7, 6), ("Meera Iyer", 2.5, 5, 3, 4.5, 5.5), ("Arjun Nair", 0, 2.5, 3, 1.5, 0),
-    ("Sameer Khan", 0, 0, 0, 0, 0), ("Neha Gupta", 0.5, 0.5, 1, 0.5, 1),
+GENAI_TEACHER = [  # reference marks assigned by hand with the rubric: student, Q1..Q5
+    ("Ananya Rao (21CS042)", 4, 6, 5, 7, 8), ("Rahul Mehta (21CS057)", 2.5, 3.5, 3, 4, 3), ("Priya Sharma (21CS063)", 0, 2, 3, 0.5, 0),
+    ("Karan Malhotra (21CS071)", 4, 5, 5, 7, 6), ("Meera Iyer (21CS072)", 2.5, 5, 3, 4.5, 5.5), ("Sneha Kulkarni (21CS081)", 4, 6, 5, 7, 8),
+    ("Rohan Das (21CS090)", 3.5, 4, 5, 4.5, 5.5),
+    # other_languages/
+    ("Ishaan Verma (21CS091)", 4, 6, 5, 7, 8), ("Kavin Kumar (21CS092)", 3, 4, 5, 5, 5.5),
+    # tricky_sheets/
+    ("Sameer Khan (21CS095)", 0, 0, 0, 0, 0), ("Neha Gupta (21CS096)", 0.5, 0.5, 1, 0.5, 1), ("Aditya Rao (21CS097)", 4, 6, 5, 7, 8),
+    ("Kavya Menon (21CS098)", 4, 6, 5, 7, 8), ("Ishaan Bose (21CS099)", 0, 0, 0, 0, 0),
 ]
 
 # ---------------------------------------------------------------- biology
@@ -198,8 +191,6 @@ Q2. Mitochondria makes proteins for the muscle.
 
 Q3. Enzymes are proteins that are used in digestion. Heat kills enzymes."""),
 }
-BIO_TEACHER = [("Diya Bhat", 3, 4, 8), ("Aarav Joshi", 2, 2, 3), ("Kabir Sethi", 0, 0, 0)]
-
 # ============================================================ renderers
 LATIN1 = {"—": "-", "–": "-", "≈": "~", "×": "x", "·": ".", "’": "'", "‘": "'", "“": '"', "”": '"', "→": "->", "√": "sqrt", "Σ": "sum", "°": " deg "}
 
@@ -208,10 +199,6 @@ def latin1(s: str) -> str:
     for a, b in LATIN1.items():
         s = s.replace(a, b)
     return s
-
-
-def sheet_text(header: str, pages) -> str:
-    return header + "\n\n" + "\n\n".join(f"{lab} {ans}" for page in pages for lab, ans in page)
 
 
 def typed_pdf(pages_text, path: Path, size=10.5):
@@ -278,23 +265,19 @@ def write_docx(paragraphs, path: Path, page_breaks_before=()):
     d.save(path)
 
 
-def write_csv(rows, path: Path):
-    path.write_text("\n".join(",".join(str(c) for c in r) for r in rows) + "\n")
-
-
 # ================================================================ build
 def student_pages(src):
-    """Two pages of (label, answer) blocks for a sheet from GENAI_SHEETS or samples/answer_sheets."""
+    """Two pages of (label, answer) blocks for a sheet from GENAI_SHEETS or demo_source/genai_sheets."""
     if src in GENAI_SHEETS:
         return GENAI_SHEETS[src][1]
-    body = (ROOT / "samples" / "answer_sheets" / f"{src}.txt").read_text().split("\n", 2)[2]
+    body = (SOURCE / "genai_sheets" / f"{src}.txt").read_text().split("\n", 2)[2]
     blocks = [b.strip() for b in body.split("\n\n") if b.strip()]
     cut = 3 if len(blocks) >= 5 else max(1, len(blocks) // 2)
     return [[("", b) for b in blocks[:cut]], [("", b) for b in blocks[cut:]]]
 
 
 def sample_header(src):
-    return (ROOT / "samples" / "answer_sheets" / f"{src}.txt").read_text().split("\n", 1)[0].strip()
+    return (SOURCE / "genai_sheets" / f"{src}.txt").read_text().split("\n", 1)[0].strip()
 
 
 def page_texts(header, pages):
@@ -398,7 +381,12 @@ def main():
     h, t = BIO_SHEETS["diya"]
     typed_pdf([h + "\n\n" + t], W / "answer_sheet_from_biology_test.pdf")
 
+    # reference marks for the evaluation page, web/evaluate.html (assigned by hand using the rubric)
+    rows = [["student", "Q1", "Q2", "Q3", "Q4", "Q5"]] + [list(r) for r in GENAI_TEACHER]
+    (G / "teacher_marks.csv").write_text("\n".join(",".join(str(c) for c in r) for r in rows) + "\n", encoding="utf-8")
+
     shutil.copy(ROOT / "scripts" / "DEMO_README.txt", OUT / "README.txt")
+    indic_demo.build()
     files = [p for p in OUT.rglob("*") if p.is_file()]
     print(f"Wrote {len(files)} files to {OUT} ({sum(p.stat().st_size for p in files) / 1e6:.1f} MB)")
 

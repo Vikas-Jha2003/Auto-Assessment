@@ -1,11 +1,22 @@
 {
   "name": "auto-assessment",
+  "version": "1.0.0",
   "private": true,
-  "description": "Grade answer sheets against a rubric with detailed feedback — a single-page web app for Firebase Hosting",
+  "type": "module",
+  "description": "Grade answer sheets against a rubric with detailed, evidence-based feedback, in English and Indian languages",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "serve": "python3 -m http.server 8000 --directory web",
-    "test": "node --test tests/web_engine.test.mjs",
+    "start": "python3 -m http.server 8000 --directory web",
+    "test": "node --test tests/*.test.mjs",
     "demo-files": "python3 scripts/make_demo_files.py",
-    "deploy": "firebase deploy --only hosting"
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "eslint": "^9.39.0",
+    "globals": "^16.0.0"
   }
 }

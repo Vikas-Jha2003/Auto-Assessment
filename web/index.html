@@ -6,10 +6,10 @@
   <title>Auto-Assessment</title>
   <meta name="description" content="Grade answer sheets against a rubric, with marks per question and feedback students can act on.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e2a78'/%3E%3Crect x='9' y='6.5' width='14' height='19' rx='2' fill='%23fff'/%3E%3Cpath d='M12 12h8M12 16h6M12 20h4' stroke='%231e2a78' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/app.css?v=4">
+  <link rel="stylesheet" href="css/app.css">
   <script src="vendor/mammoth.browser.min.js" defer></script>
   <script src="vendor/jszip.min.js" defer></script>
-  <script type="module" src="js/app.js?v=4"></script>
+  <script type="module" src="js/main.js"></script>
 </head>
 <body>
   <header class="top">
@@ -33,7 +33,7 @@
   <main>
     <section class="intro">
       <h1>Grade answer sheets</h1>
-      <p>Upload a test and your students' answer sheets. Every student gets marks for each question, with evidence quoted from their own answer and clear steps to improve.</p>
+      <p>Upload a test and your students' answer sheets. Every student gets marks for each question, with evidence quoted from their own answer and clear steps to improve. Answers can be in English or any Indian language.</p>
     </section>
 
     <div id="notice"></div>
@@ -65,6 +65,10 @@
       </section>
 
       <div class="go">
+        <label class="lang-pick" for="language">
+          <span>Feedback language</span>
+          <select id="language"></select>
+        </label>
         <button class="btn primary big" id="gradeBtn" type="submit">Grade answer sheets</button>
         <p class="form-error" id="formError" role="alert"></p>
       </div>

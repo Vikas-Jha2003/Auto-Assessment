@@ -4,6 +4,11 @@ DEMO FILES FOR AUTO-ASSESSMENT
 Upload these on the home page to show the app to an audience.
 Before you start: Settings -> paste your OpenRouter API key -> Save.
 
+Suggested three-case demo (diverse scenarios):
+  1. Demo A  - a class of typed, Word, handwritten and scanned sheets
+  2. Demo E  - a test in Hindi, answered in Hindi, Hinglish, handwriting and English
+  3. Demo C or D - adversarial input: a sheet that asks for full marks, or a rubric from another test
+
 
 1_genai_midterm  (5 questions, 30 marks)
 ----------------------------------------
@@ -49,6 +54,16 @@ Demo D - wrong documents (the app checks the documents before grading)
         Add it with the individual sheets. It gets 0 and is flagged "Not this test?".
 
 
+Demo F - the English test answered in Indian languages ("One file per student")
+    other_languages/21CS091_ishaan_hindi.pdf   a strong answer written in Hindi
+    other_languages/21CS092_kavin_tamil.pdf    a middling answer written in Tamil
+        Set "Feedback language" to "Same as the student's answer": each student gets feedback
+        in their own language, and the report headings follow it.
+
+teacher_marks.csv - reference marks for every student above, for the evaluation page
+                    (evaluate.html). Assigned by hand using the rubric.
+
+
 2_biology_unit_test  (3 questions, 15 marks)
 --------------------------------------------
 Question paper : question_paper.pdf
@@ -56,6 +71,23 @@ Rubric         : rubric.pdf   (Q3 is marked in bands like "7-8 marks: ..."; the 
                                the bands into criteria that add up to 8)
 Model answers  : model_answers.pdf
 Answer sheets  : individual_sheets/  (typed PDF, handwritten photo, Word file)
+
+
+3_hindi_science_test  (3 questions, 12 marks, written in Hindi)
+------------------------------------------------------------------
+Demo E
+Question paper : question_paper.pdf     (Hindi)
+Rubric         : rubric.pdf             (Hindi)
+Model answers  : model_answers.pdf      (Hindi)
+Answer sheets  : answer_sheets/  upload all four
+    10A01_aarav_hindi.pdf          strong, in Hindi
+    10A02_sunita_hinglish.pdf      Hindi in Latin script mixed with English (Hinglish)
+    10A03_rohit_handwritten.jpg    handwritten Hindi photo; R = V x I mistake
+    10A04_meera_english.pdf        answered in English
+teacher_marks.csv                  reference marks for the evaluation page
+
+These PDFs have the broken text layer that is common in Indian-language PDFs. The app
+detects this ("read from the page image when grading") and reads them with the vision model.
 
 
 Things worth pointing out to the audience
@@ -66,5 +98,7 @@ Things worth pointing out to the audience
 * A "Check this" flag appears when the grader's independent passes disagreed.
 * Download the class marksheet (CSV) or every student's report (.zip).
 
-Handwritten and scanned files need a real API key: demo mode cannot read images.
+* Feedback can be in the student's own language (Feedback language next to the Grade button).
+
+Handwritten, scanned and Indian-language PDF files need a real API key: demo mode cannot read images.
 A 7-student batch with the default settings costs roughly $1-2 of OpenRouter credit.
